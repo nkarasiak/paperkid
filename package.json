@@ -1,0 +1,16 @@
+{
+  "name": "paper-kid",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite src",
+    "build": "node src/pack.mjs",
+    "check": "tsc --noEmit --strict --skipLibCheck --target es2022 --module esnext --moduleResolution bundler --resolveJsonModule --lib es2022,dom,dom.iterable src/main.ts"
+  },
+  "devDependencies": {
+    "roadroller": "^2.1.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}
