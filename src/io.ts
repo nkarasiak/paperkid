@@ -2,6 +2,7 @@
 
 import { unlockAudio } from './audio'
 import { paper } from './sprites'
+import { bake } from './pix'
 
 export interface Controls { steer: number; throttle: number; throw: boolean; start: boolean; credits?: boolean }
 
@@ -87,9 +88,10 @@ if (touch) {
     key('ArrowLeft', x < -1 / 6); key('ArrowRight', x > 1 / 6); key('ArrowUp', y < -1 / 6); key('ArrowDown', y > 1 / 6)
   }
   pad.onpointerup = pad.onpointercancel = () => ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].forEach(c => key(c, false))
-  hold(el('thr', `<img src="${paper(1).img.toDataURL()}">THROW`), 'Space')
+  hold(el('thr', `<img src="${bake(paper(1)).img.toDataURL()}">THROW`), 'Space')
   hold(el('pause', 'II', 'right:calc(var(--g)/2);top:28px;transform:translate(50%,-50%);padding:8px'), 'KeyP')
   hold(el('mute', '♪', 'right:calc(var(--g)/2);top:68px;transform:translate(50%,-50%);padding:8px'), 'KeyM')
+  hold(el('view', '3D', 'right:calc(var(--g)/2);top:108px;transform:translate(50%,-50%);padding:8px'), 'KeyV')
   el('rot', '<p>EXTRA! EXTRA!<br><br>TURN YOUR PHONE<br>SIDEWAYS TO RIDE</p>', 'transform:none;opacity:1')
   hold(document.querySelector('canvas')!, 'Space') // tap the screen to start, confirm or throw
 }

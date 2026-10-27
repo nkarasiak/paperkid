@@ -16,7 +16,7 @@ const OPTIONS = [
 ]
 type State = 'title' | 'select' | 'map' | 'ride' | 'course' | 'results' | 'over' | 'credits'
 
-const CREDITS = ['PAPER KID', `VERSION ${version}`, '', 'DIRECTED BY', 'NICOLAS KARASIAK', '', 'CODE BY', 'CLAUDE', '', 'PIXELS, MUSIC & VOICES', 'ALL MADE IN CODE', 'NOT ONE ASSET FILE', '', 'THE WHOLE GAME', 'FITS IN ONE 25 KB FILE', '',
+const CREDITS = ['PAPER KID', `VERSION ${version}`, '', 'DIRECTED BY', 'NICOLAS KARASIAK', '', 'CODE BY', 'CLAUDE', '', 'PIXELS, MUSIC & VOICES', 'ALL MADE IN CODE', 'NOT ONE ASSET FILE', '', 'THE WHOLE GAME', 'FITS IN ONE 30 KB FILE', '',
   'AFTER THE ORIGINAL', 'PAPERBOY', 'ATARI GAMES, 1984', '', 'ORIGINAL DESIGN', 'JOHN SALWITZ', 'DAVE RALSTON', '', 'ORIGINAL MUSIC', 'HAL CANON', 'EARL VICKERS', '', 'THANKS FOR RIDING!', '', 'GITHUB.COM/NKARASIAK/PAPERKID']
 
 interface Results { lines: [string, number][]; lost: number; regained: boolean; fired: boolean; perfect: boolean }
@@ -190,8 +190,8 @@ export class Game {
     ctx.fillText('PAPER KID', W / 2, 150)
     text(ctx, 'ONE BIKE. TWENTY HOUSES. SEVEN DAYS.', W / 2, 180, 12, '#333', 'center', '')
     text(ctx, `HIGH SCORE ${String(this.hi).padStart(6, '0')}`, W / 2, 215, 12, '#333', 'center', '')
-    const lines = touch ? ['PAD             STEER LEFT-RIGHT, SPEED UP-DOWN', 'THROW           THROW PAPER (TO THE LEFT)', 'II PAUSE  ·  ♪ MUTE']
-      : ['ARROWS / WASD   STEER LEFT-RIGHT, SPEED UP-DOWN', 'SPACE / J       THROW PAPER (TO THE LEFT)', 'P PAUSE  ·  M MUTE  ·  C CREDITS  ·  GAMEPAD WORKS TOO']
+    const lines = touch ? ['PAD             STEER LEFT-RIGHT, SPEED UP-DOWN', 'THROW           THROW PAPER (TO THE LEFT)', 'II PAUSE  ·  ♪ MUTE  ·  3D VIEW']
+      : ['ARROWS / WASD   STEER LEFT-RIGHT, SPEED UP-DOWN', 'SPACE / J       THROW PAPER (TO THE LEFT)', 'P PAUSE  ·  M MUTE  ·  V 3D VIEW  ·  C CREDITS  ·  GAMEPAD TOO']
     lines.forEach((l, i) => text(ctx, l, W / 2, 260 + i * 18, 11, '#444', 'center', ''))
     this.blink(ctx, 'PRESS SPACE TO START', 345)
   }

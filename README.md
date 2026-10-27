@@ -2,7 +2,7 @@
 
 I deliver your paper. I also break your windows. 🗞️🚲
 
-Seven days, one street, one bike. Subscribers get their paper on the porch. Everyone else gets it through the window. I fit in one file, `paperkid.html` (about 25 KB), with no images, no sound files and no libraries. Ride with me at https://nkarasiak.github.io/paperkid/, or open the file in any modern browser.
+Seven days, one street, one bike. Subscribers get their paper on the porch. Everyone else gets it through the window. I fit in one file, `paperkid.html` (about 30 KB), with no images, no sound files and no libraries. Ride with me at https://nkarasiak.github.io/paperkid/, or open the file in any modern browser.
 
 ## Riding with me
 
@@ -12,6 +12,12 @@ Seven days, one street, one bike. Subscribers get their paper on the porch. Ever
 | Space / J | Throw a paper (always to the left); confirm on menus |
 | Enter | Start |
 | P / M | Pause / mute |
+| V | Switch view: 2D, 2D from further, 3D behind me, 3D from straight above |
+| [ / ] or ( / ) | Narrow / widen the 3D lens (38° by default; narrower is closer to the old game's flat look) |
+| - / = or + | Lower / raise the 3D camera |
+| Mouse wheel, Page Up / Page Down | Zoom in / out (in 2D: switch between 2D and 2D from further) |
+| Trackpad, two fingers | Up / down zooms, sideways turns the 3D camera around me, pinch changes the lens |
+| 0 | Reset the 3D camera |
 | C | Roll the credits, from the title screen |
 
 I take a gamepad too (stick or d-pad, any face button).
@@ -23,7 +29,7 @@ I take a gamepad too (stick or d-pad, any face button).
 | Pixel d-pad, left | Steer and change speed; diagonals work |
 | THROW paper, right | Throw a paper |
 | Tap the game | Start, confirm, or throw |
-| II / ♪, top right | Pause / mute |
+| II / ♪ / 3D, top right | Pause / mute / switch view |
 
 The credits still need the C key, so you can't roll them on a touch screen yet.
 
@@ -46,15 +52,18 @@ Plain TypeScript and the browser's own APIs, with no runtime dependencies.
 | `src/game.ts` | Screen flow (title, street select, route map, ride, course, results, game over, credits), scoring, high score |
 | `src/street.ts` | Street and course layouts from a seeded random generator, so every run of a street is the same |
 | `src/ride.ts` | One day's ride: bike physics, papers, characters, collisions, deliveries and damage |
-| `src/render.ts` | Draws the world in oblique projection, depth-sorted, plus the HUD |
+| `src/render.ts` | Describes each frame once (ground, sprites, shadows), draws it in oblique projection, depth-sorted, plus the HUD |
+| `src/gl.ts` | The 3D view: turns the same sprite recipes into WebGL2 meshes, with a camera behind me or straight above, and an outline pass |
 | `src/pix.ts` | A tiny software rasterizer that turns 3D shapes into outlined pixel-art sprites |
 | `src/sprites.ts` | Every piece of art (houses, me, cars, dogs, people, props) described as boxes, lines, discs and rings |
 | `src/audio.ts` | Synthesized sound effects, an FM chiptune and spoken lines |
 | `src/io.ts` | Keyboard, gamepad and touch input (the on-screen controls are built here) |
 
-**My street.** The street is a 3D space: `s` runs along the street, `l` across it (0 at the back of the houses, growing toward the road), `z` up. The screen position is `x = 0.7·s + l`, `y = −s − z`, an oblique view like the 1980s home ports, drawn at 2× zoom. Objects are painted far-to-near each frame.
+**My street.** The street is a 3D space: `s` runs along the street, `l` across it (0 at the back of the houses, growing toward the road), `z` up. The screen position is `x = 0.7·s + l`, `y = −s − z`, an oblique view like the 1980s home ports, drawn at 2× zoom (1.5× in the 2D FAR view, on a canvas of twice the resolution so the pixels stay square). Objects are painted far-to-near each frame.
 
 **My looks.** Nothing is loaded from files. Each sprite is described as 3D shapes with colors, or color functions for siding, shingles, bricks and leaves. On first use, `pix.ts` rasterizes it into a buffer, adds a dark outline, crops it into a small canvas and caches it. Ground textures are generated speckle patterns.
+
+**My 3D view.** Press V and the same street is drawn in WebGL2 instead. `gl.ts` runs each sprite recipe through a painter that records triangles instead of pixels: boxes get all their faces, lines become thin boxes, rings become short tyres, and discs (heads, leaves) stay flat and face the camera like the 2D sprites. Each face's colour function is baked into a small texture, so the colours and face shading are exactly the 2D ones, with no lighting. A post pass compares depths to draw the same dark outline around everything. It renders at the game's 512×384, so it stays pixel art. I remember your view.
 
 **My bike.** My speeds, steering, paper throw and crash timing were measured on the Atari ST port and converted to 60 Hz ticks (three fixed speeds: 0.42, 0.83 and 1.67 units per tick). Enemy speeds and point values are tuned guesses.
 
@@ -71,8 +80,8 @@ npm run build   # rebuilds paperkid.html
 
 `npm run build` runs `src/pack.mjs`:
 
-1. **Vite** bundles and minifies the TypeScript into one script (about 54 KB).
-2. **Roadroller** compresses it into a self-decoding script (about 25 KB). Set `RR_LEVEL=2` for a longer search that saves only a few bytes.
+1. **Vite** bundles and minifies the TypeScript into one script (about 66 KB).
+2. **Roadroller** compresses it into a self-decoding script (about 30 KB). Set `RR_LEVEL=2` for a longer search that saves only a few bytes.
 3. That script is inlined into a minimal HTML page with a 🗞️ favicon (an inline SVG), so the result is one standalone file.
 
 **Publishing.** `.github/workflows/pages.yml` publishes `paperkid.html` as the site's `index.html` on every push to `main`. It skips itself while the repository is private.
