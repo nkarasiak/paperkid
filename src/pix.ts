@@ -23,7 +23,7 @@ export function hash(a: number, b: number) {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296
 }
 
-function rgb(c: string) {
+export function rgb(c: string) {
   let n = rgbCache.get(c)
   if (n === undefined) {
     const v = parseInt(c.slice(1), 16)
@@ -134,17 +134,25 @@ export class Painter {
   }
 }
 
-const cache = new Map<string, Sprite>()
+/** A sprite's recipe. Baked on demand: to outlined pixels here (bake), or to a mesh for the 3D view (gl.ts). */
+export interface Art { draw: (p: Painter) => void; outline: string; s?: Sprite; m?: unknown }
+const cache = new Map<string, Art>()
 
-/** Bake (once) and cache a sprite. */
-export function sprite(key: string, draw: (p: Painter) => void, outline = '#161616'): Sprite {
-  let s = cache.get(key)
-  if (!s) {
+/** The (cached) recipe for a sprite. */
+export function sprite(key: string, draw: (p: Painter) => void, outline = '#161616'): Art {
+  let a = cache.get(key)
+  if (!a) cache.set(key, (a = { draw, outline }))
+  return a
+}
+
+/** Bake (once) a recipe into an outlined pixel sprite. */
+export function bake(a: Art): Sprite {
+  if (!a.s) {
     const p = new Painter()
-    draw(p)
-    cache.set(key, (s = p.done(outline)))
+    a.draw(p)
+    a.s = p.done(a.outline)
   }
-  return s
+  return a.s
 }
 
 /** Small repeating texture from a colour function of pixel (x, y). */

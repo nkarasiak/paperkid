@@ -1,7 +1,7 @@
 // All game art, drawn as 3D shapes and baked to outlined pixel sprites (see pix.ts).
 // Every sprite's local origin is its object's (s, l, z) = (0, 0, 0) corner or centre, as noted.
 
-import { dark, hash, sprite, type Painter, type V3 } from './pix'
+import { dark, hash, sprite, tile, type Painter, type V3 } from './pix'
 import { HOUSE_H, HOUSE_LEN, L, STREETS, type Lot } from './street'
 
 const SKIN = '#f2b98a', JEANS = '#3b4f8f', SHOE = '#f4f4ec', TIRE = '#262626', CHROME = '#b8bcc4'
@@ -26,6 +26,18 @@ const leafy = (base: string) => (u: number, v: number) => {
   const n = hash(u * 1.3, v * 1.3)
   return n < 0.22 ? dark(base, 1.3) : n > 0.8 ? dark(base, 0.7) : base
 }
+
+// Ground textures: 16×16 speckles, one texel per world unit, by name so both the 2D and 3D views can tile them.
+const SPECKLE: Record<string, [number, string, string, string, number, number]> = {
+  grassA: [0, '#4e9139', '#3f7d30', '#5ea64a', 0.14, 0.12],
+  grassB: [7, '#56993f', '#468836', '#66ae50', 0.14, 0.12],
+  walk: [50, '#bab7ae', '#a6a399', '#c8c5bc', 0.12, 0.06],
+  road: [90, '#46464d', '#38383e', '#56565e', 0.1, 0.08],
+  dirt: [130, '#b38b56', '#9a7444', '#c49c66', 0.16, 0.1],
+}
+let tiles: Record<string, HTMLCanvasElement> | undefined
+export const groundTiles = () => (tiles ??= Object.fromEntries(Object.entries(SPECKLE).map(([k, [seed, base, lo, hi, pLo, pHi]]) =>
+  [k, tile(16, 16, (x, y) => { const n = hash(x + seed, y); return n < pLo ? lo : n > 1 - pHi ? hi : base })])))
 
 // ---------------------------------------------------------------- houses (origin: house s0, l = 0)
 
@@ -297,7 +309,7 @@ export function target(hit: boolean) {
 /** The paper kid. frame 0..3 = crank angle; throwing raises the left arm. */
 export function rider(frame: number, throwing: boolean) {
   return sprite(`rider${frame}${throwing}`, p => {
-    const shirt = '#d83a30', cap = '#2a5ad8', th = (frame * Math.PI) / 2
+    const shirt = '#d83a30', cap = '#2a5ad8', th = -(frame * Math.PI) / 2 // front pedal goes down: forward pedalling
     const crank: V3 = [0, 0, 4.5]
     const pedal = (side: number): V3 => [crank[0] + 3 * Math.cos(th) * side, 2.4 * side, crank[2] + 3 * Math.sin(th) * side]
     const leg = (side: number) => {
