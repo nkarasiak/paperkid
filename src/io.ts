@@ -4,11 +4,12 @@ import { unlockAudio } from './audio'
 import { paper } from './sprites'
 import { bake } from './pix'
 
-export interface Controls { steer: number; throttle: number; throw: boolean; start: boolean; credits?: boolean }
+export interface Controls { steer: number; throttle: number; throw: boolean; start: boolean; credits?: boolean; at?: [number, number] }
 
 const held = new Set<string>()
 const pressed = new Set<string>()
 let padWas = false
+let at: [number, number] | undefined // where the screen was tapped, in 512×384 game units
 
 addEventListener('keydown', e => {
   unlockAudio()
@@ -42,7 +43,9 @@ export function poll(): Controls {
   }
   const credits = pressed.has('KeyC')
   pressed.clear()
-  return { steer, throttle, throw: thr, start, credits }
+  const c = { steer, throttle, throw: thr, start, credits, at }
+  at = undefined
+  return c
 }
 
 // Touch: a pixel d-pad and a paper to throw, drawn in the side margins of a landscape screen.
@@ -93,5 +96,11 @@ if (touch) {
   hold(el('mute', '♪', 'right:calc(var(--g)/2);top:68px;transform:translate(50%,-50%);padding:8px'), 'KeyM')
   hold(el('view', '3D', 'right:calc(var(--g)/2);top:108px;transform:translate(50%,-50%);padding:8px'), 'KeyV')
   el('rot', '<p>EXTRA! EXTRA!<br><br>TURN YOUR PHONE<br>SIDEWAYS TO RIDE</p>', 'transform:none;opacity:1')
-  hold(document.querySelector('canvas')!, 'Space') // tap the screen to start, confirm or throw
+  const cv = document.querySelector('canvas')!
+  hold(cv, 'Space') // tap the screen to start, confirm or throw
+  cv.onpointerdown = e => {
+    const r = cv.getBoundingClientRect()
+    at = [((e.clientX - r.x) / r.width) * 512, ((e.clientY - r.y) / r.height) * 384]
+    key('Space', true)
+  }
 }

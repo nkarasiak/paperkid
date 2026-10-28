@@ -13,10 +13,8 @@ Seven days, one street, one bike. Subscribers get their paper on the porch. Ever
 | Enter | Start |
 | P / M | Pause / mute |
 | V | Switch view: 2D, 2D from further, 3D behind me, 3D from straight above |
-| [ / ] or ( / ) | Narrow / widen the 3D lens (38° by default; narrower is closer to the old game's flat look) |
-| - / = or + | Lower / raise the 3D camera |
-| Mouse wheel, Page Up / Page Down | Zoom in / out (in 2D: switch between 2D and 2D from further) |
-| Trackpad, two fingers | Up / down zooms, sideways turns the 3D camera around me, pinch changes the lens |
+| Mouse wheel | Zoom in / out (in 2D: switch between 2D and 2D from further) |
+| Trackpad, two fingers | Up / down zooms, sideways turns the 3D camera around me, pinch changes the lens (zooms in the view from above); kept until you reload |
 | 0 | Reset the 3D camera |
 | C | Roll the credits, from the title screen |
 

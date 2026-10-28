@@ -29,6 +29,7 @@ export class Game {
   state: State = 'title'
   t = 0
   sel = 0
+  tapped = -1 // the card last tapped on a touch screen; tapping it again rides
   row = 0
   opts = [1, 1, 1]
   prevSteer = 0
@@ -55,7 +56,7 @@ export class Game {
     this.prevThrottle = Math.abs(c.throttle) > 0.5 ? c.throttle : 0
     switch (this.state) {
       case 'title':
-        if (c.start) { sfx('select'); say('Paper Kid!'); this.go('select') }
+        if (c.start) { sfx('select'); say('Paper Kid!'); this.tapped = -1; this.go('select') }
         else if (c.credits) { sfx('select'); this.creditsRide(0); this.go('credits') }
         break
       case 'credits':
@@ -65,6 +66,7 @@ export class Game {
         if ((c.start || c.credits) && this.t > 20) this.go('title')
         break
       case 'select':
+        if (c.at) { if (this.t > 10) this.pick(...c.at); break } // touch: tap the cards and settings themselves
         if (vtap) { this.row = (this.row + vtap + 4) % 4; sfx('select') }
         if (tap && this.row === 0) { this.sel = (this.sel + tap + 3) % 3; sfx('select') }
         if (tap && this.row > 0) { const n = OPTIONS[this.row - 1].values.length; this.opts[this.row - 1] = (this.opts[this.row - 1] + tap + n) % n; sfx('select') }
@@ -88,6 +90,19 @@ export class Game {
         else { this.run.day++; this.go('map') }
         break
       case 'over': if (c.start && this.t > 60) this.go('title'); break
+    }
+  }
+
+  private pick(x: number, y: number) {
+    const card = [0, 1, 2].find(i => x >= 32 + i * 156 && x < 168 + i * 156 && y >= 84 && y < 234)
+    const row = Math.floor((y - 248) / 18)
+    if ((card === this.sel && card === this.tapped) || (y >= 312 && y < 348 && Math.abs(x - W / 2) < 100)) this.newRun() // the tapped card again, or RIDE
+    else if (card !== undefined) { this.sel = this.tapped = card; this.row = 0; sfx('select') }
+    else if (row >= 0 && row < 3 && x > 130 && x < 390) {
+      const n = OPTIONS[row].values.length, dir = x > 280 && x < 345 ? -1 : 1 // the ◄ side of the value steps back
+      this.row = row + 1
+      this.opts[row] = (this.opts[row] + dir + n) % n
+      sfx('select')
     }
   }
 
@@ -214,7 +229,10 @@ export class Game {
       text(ctx, `${on ? '►' : ' '} ${o.label}`, 150, y, 12, on ? '#c0392b' : '#333', 'left', '')
       text(ctx, `◄ ${o.names[this.opts[i]]} ►`, 362, y, 12, on ? '#c0392b' : '#333', 'right', '')
     })
-    text(ctx, touch ? '▲ ▼ ROW   ◄ ► CHOOSE   TAP CONFIRM' : '▲ ▼ ROW   ◄ ► CHOOSE   SPACE CONFIRM', W / 2, 335, 11, '#333', 'center', '')
+    if (!touch) return text(ctx, '▲ ▼ ROW   ◄ ► CHOOSE   SPACE CONFIRM', W / 2, 335, 11, '#333', 'center', '')
+    ctx.fillStyle = '#c0392b'
+    ctx.fillRect(W / 2 - 100, 314, 200, 32)
+    text(ctx, `RIDE ${STREETS[this.sel].name} ►`, W / 2, 335, 13, '#fff', 'center', '')
   }
 
   private renderMap(ctx: CanvasRenderingContext2D) {
