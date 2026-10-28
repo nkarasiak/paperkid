@@ -246,8 +246,8 @@ function init(w: number, h: number) {
 // A 3D camera sits back units behind the kid and h above the ground (or, from above, top units straight up),
 // framed for a lens of f0 degrees; at fov it dollies back so the kid keeps his size, and d scales the distance
 // (zoom); yaw turns it around the kid, in degrees. It always aims so the kid sits 62% down the screen. A long
-// lens keeps edges near parallel, like the old game's flat projection. Tuned in game, from the keyboard or with
-// two fingers on a trackpad (main.ts); 0 resets.
+// lens keeps edges near parallel, like the old game's flat projection. Tuned in game with two fingers on a
+// trackpad (main.ts), for this session only; 0 resets.
 // The 2D views have no camera: flat = [zoom (screen pixels per sprite pixel), kid's screen x, y] for render.ts.
 interface View { name: string; flat?: [number, number, number]; back?: number; h?: number; top?: number; d?: number; yaw?: number; f0?: number; fov?: number }
 const VIEWS: View[] = [
@@ -260,21 +260,16 @@ const DEFAULTS = VIEWS.map(v => ({ ...v }))
 let view = 0
 try {
   view = Number(localStorage.getItem('paper-kid-view')) % VIEWS.length || 0
-  const cams: (number[] | null)[] = JSON.parse(localStorage.getItem('paper-kid-cam') ?? '[]')
-  VIEWS.forEach((v, i) => { const c = cams[i]; if (!v.flat && c) [v.fov = v.fov, v.h = v.h, v.d = v.d, v.yaw = v.yaw] = c.map(x => x ?? undefined) })
 } catch { /* private mode: defaults */ }
 const label = (v: View) => 'VIEW: ' + (v.flat ? v.name
-  : `${v.name} · FOV ${Math.round(v.fov!)}°${v.h ? ` · HEIGHT ${v.h}` : ''} · ZOOM ${(1 / v.d!).toFixed(1)}×${Math.round(v.yaw!) ? ` · TURN ${Math.round(v.yaw!)}°` : ''}`)
+  : `${v.name}${v.top ? '' : ` · FOV ${Math.round(v.fov!)}°`} · ZOOM ${(1 / v.d!).toFixed(1)}×${Math.round(v.yaw!) ? ` · TURN ${Math.round(v.yaw!)}°` : ''}`)
 export const viewInfo = { name: label(VIEWS[view]), t: 0 }
 export const flat2D = () => VIEWS[view].flat ?? VIEWS[0].flat!
 /** Canvas resolution multiplier: a fractional 2D zoom renders at 2× so every sprite pixel stays a whole square. */
 export const canvasScale = () => (Number.isInteger(flat2D()[0]) ? 1 : 2)
 const save = () => {
   Object.assign(viewInfo, { name: label(VIEWS[view]), t: performance.now() })
-  try {
-    localStorage.setItem('paper-kid-view', String(view))
-    localStorage.setItem('paper-kid-cam', JSON.stringify(VIEWS.map(v => (v.flat ? null : [v.fov, v.h, v.d, v.yaw]))))
-  } catch { /* keep it for this session */ }
+  try { localStorage.setItem('paper-kid-view', String(view)) } catch { /* keep it for this session */ }
 }
 
 /** V cycles the views; the 3D ones are skipped where WebGL2 is missing. */
@@ -284,18 +279,18 @@ export function nextView() {
   save()
 }
 
-/** Steps the 3D lens (4° a step), camera height (4 a step), zoom (15% a step; + moves away) and turn (degrees).
+/** Steps the 3D lens (4° a step), zoom (15% a step; + moves away) and turn (degrees).
  * Fractional steps are fine (trackpads). In 2D, a whole step of zoom flips 2D / 2D FAR. */
 let zoomAcc = 0
-export function tuneView(dFov: number, dH: number, dZoom = 0, dYaw = 0) {
+export function tuneView(dFov: number, dZoom = 0, dYaw = 0) {
   const v = VIEWS[view]
   if (v.flat) {
     if (Math.abs((zoomAcc += dZoom)) >= 1) { view = zoomAcc > 0 ? 1 : 0; zoomAcc = 0; save() }
-    else if (dFov || dH) Object.assign(viewInfo, { name: 'LENS AND HEIGHT: 3D VIEWS, PRESS V', t: performance.now() })
+    else if (dFov) Object.assign(viewInfo, { name: 'LENS: 3D VIEWS, PRESS V', t: performance.now() })
     return
   }
+  if (v.top) [dFov, dZoom] = [0, dZoom + dFov / 5] // from above a wider lens only stretches roofs up at you: pinch zooms
   v.fov = Math.max(8, Math.min(90, v.fov! + dFov * 4))
-  if (v.h) v.h = Math.max(20, Math.min(160, v.h + dH * 4))
   v.d = Math.max(0.2, Math.min(3, v.d! * 1.15 ** dZoom))
   v.yaw = ((((v.yaw! + dYaw + 180) % 360) + 360) % 360) - 180
   save()

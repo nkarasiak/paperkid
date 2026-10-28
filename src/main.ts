@@ -29,23 +29,16 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyP') paused = !paused
   if (e.code === 'KeyM') toggleMute()
   if (e.code === 'KeyV') nextView()
-  // By the typed character, so it works on any keyboard layout; ( ) are direct keys on AZERTY.
-  if ('[('.includes(e.key)) tuneView(-1, 0)
-  if ('])'.includes(e.key)) tuneView(1, 0)
-  if (e.key === '-') tuneView(0, -1)
-  if ('=+'.includes(e.key)) tuneView(0, 1)
-  if (e.key === 'PageUp') tuneView(0, 0, -1)
-  if (e.key === 'PageDown') tuneView(0, 0, 1)
   if (e.key === '0' || e.code === 'Digit0') resetView() // Digit0: the 0 key on AZERTY types à without Shift
 })
 // Two fingers on a trackpad (or a mouse wheel): up/down zooms, sideways (or Shift + wheel) turns the camera around
-// the kid, a pinch (sent as Ctrl + wheel) changes the lens. Amounts follow how far the fingers moved: 100 px is one
-// zoom step. preventDefault keeps the browser from zooming the page or swiping back a page.
+// the kid, a pinch (sent as Ctrl + wheel) changes the lens (zooms, from above). Amounts follow how far the fingers
+// moved: 100 px is one zoom step. preventDefault keeps the browser from zooming the page or swiping back a page.
 addEventListener('wheel', e => {
   e.preventDefault()
   const k = e.deltaMode ? 33 : 1
-  if (e.ctrlKey) tuneView((e.deltaY * k) / 20, 0)
-  else tuneView(0, 0, (e.deltaY * k) / 100, (e.deltaX * k) / 5)
+  if (e.ctrlKey) tuneView((e.deltaY * k) / 20)
+  else tuneView(0, (e.deltaY * k) / 100, (e.deltaX * k) / 5)
 }, { passive: false })
 document.addEventListener('visibilitychange', () => { if (document.hidden) paused = true })
 
